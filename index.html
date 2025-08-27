@@ -2,23 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Zezo Clicker — Full Release (CPS & Shiny Medals)</title>
-
-<!-- iOS home-screen icons (iPhone / iPad) -->
-<link rel="apple-touch-icon" sizes="180x180" href="/ps5.jpeg">
-<link rel="apple-touch-icon" sizes="167x167" href="/ps5.jpeg">
-<link rel="apple-touch-icon" sizes="152x152" href="/ps5.jpeg">
-<link rel="apple-touch-icon" sizes="120x120" href="/ps5.jpeg">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Zezo Clicker — Full Release (CPS & Shiny Medals) — Mobile Friendly</title>
 
 <!-- Fallback favicon / progressive web manifest -->
 <link rel="icon" type="image/png" sizes="512x512" href="/ps5.jpeg">
 <link rel="manifest" href="/manifest.json">
 
-<!-- iOS web app meta -->
+<!-- iOS home-screen icon & web-app meta (for iPhones) -->
+<link rel="apple-touch-icon" sizes="180x180" href="/ps5.jpeg">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="CLICKABLE">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Zezo Clicker">
 
 <!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -33,13 +28,14 @@
     --muted: rgba(230,238,246,0.6);
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial; background: linear-gradient(160deg,var(--bg-a), var(--bg-b)); color:#e6eef6}
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial; background: linear-gradient(160deg,var(--bg-a), var(--bg-b)); color:#e6eef6;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh}
   .container{max-width:980px;margin:18px auto;padding:18px}
   .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:16px; box-shadow: 0 6px 20px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03)}
   .center{display:flex;align-items:center;justify-content:center}
-  input, select {width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-size:15px}
+  input, select {width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-size:16px}
 
-  button{cursor:pointer;border:0;padding:10px 14px;border-radius:10px;font-weight:700}
+  button{cursor:pointer;border:0;padding:12px 14px;border-radius:10px;font-weight:800;line-height:1}
   .btn-primary{background:linear-gradient(90deg,var(--cta), #ffb86b); color:#06101a}
   .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
 
@@ -50,20 +46,23 @@
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
   .stats{display:flex;gap:12px;align-items:center}
   .stat{background:var(--panel);padding:10px 12px;border-radius:10px;font-weight:700;min-width:110px;text-align:center}
-  #game-area{margin:6px 0;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));height:56vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;user-select:none}
-  #click-hint{font-size:20px;padding:8px}
+  /* make click area taller and responsive */
+  #game-area{margin:6px 0;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;user-select:none;touch-action:none}
+  /* desktop default: nice tall area */
+  #game-area{height:68vh; max-height:calc(100vh - 220px);}
+  #click-hint{font-size:20px;padding:8px;text-align:center}
 
   /* CPS overlay */
-  .cps-badge{position:absolute;left:12px;top:12px;background:rgba(0,0,0,0.45);padding:8px 10px;border-radius:10px;font-weight:800;backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,0.04)}
+  .cps-badge{position:absolute;left:12px;top:12px;background:rgba(0,0,0,0.45);padding:10px 12px;border-radius:12px;font-weight:800;backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,0.04)}
   .cps-badge strong{display:block;font-size:16px}
-  .cps-badge span{font-size:13px;opacity:0.9}
+  .cps-badge span{font-size:13px;opacity:0.95}
 
   /* ripple */
   .ripple{position:absolute;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:0.55}
 
   /* controls */
   .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .small{font-size:13px;padding:8px 10px;border-radius:10px}
+  .small{font-size:14px;padding:10px 12px;border-radius:10px}
   .spin-wheel{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:linear-gradient(180deg,#fff6e8,#ffd19c);color:#3b1f00;box-shadow:0 8px 30px rgba(255,138,0,0.12)}
   .spin-disabled{opacity:0.45;pointer-events:none}
 
@@ -79,8 +78,31 @@
   .medal-draggable{cursor:grab}
 
   /* shiny pulse for newly earned */
-  .new-medal{animation:newPulse .9s ease;}
+  .new-medal{animation:newPulse .9s ease}
   @keyframes newPulse{0%{transform:scale(0.9);opacity:0}50%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+
+  /* medal-area green flash animation (used instead of pop-up notifications) */
+  .medal-flash {
+    animation: medalFlash 1.1s ease;
+  }
+  @keyframes medalFlash {
+    0% {
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      transform: translateY(0);
+    }
+    15% {
+      box-shadow: 0 10px 40px rgba(76,175,80,0.32), inset 0 0 18px rgba(76,175,80,0.06);
+      transform: translateY(-2px);
+    }
+    55% {
+      box-shadow: 0 12px 60px rgba(76,175,80,0.24), inset 0 0 14px rgba(76,175,80,0.04);
+      transform: translateY(0);
+    }
+    100% {
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      transform: translateY(0);
+    }
+  }
 
   /* modal / challenge UI */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center}
@@ -102,6 +124,7 @@
     align-items: flex-end;
     gap: 10px;
     z-index: 9999;
+    max-width:40%;
   }
   .admin-msg {
     pointer-events: auto;
@@ -138,14 +161,40 @@
   .invisible { display: none; }
 
   .footer{margin-top:12px;color:var(--muted);font-size:13px}
-  @media (max-width:720px){
-    #game-area{height:60vh}
-    .stat{min-width:88px}
-  }
 
   /* keep signed label */
   .keep-row{display:flex;align-items:center;gap:8px;margin-top:6px}
   .keep-row input[type="checkbox"]{width:18px;height:18px}
+
+  /* small-screen adjustments */
+  @media (max-width: 920px){
+    .container{padding:14px;margin:12px auto}
+    #game-area{height:72vh; max-height:calc(100vh - 200px)}
+    .stats{gap:8px}
+    .stat{min-width:88px;padding:8px}
+    .admin-msg{min-width:180px}
+  }
+
+  @media (max-width: 720px){
+    .container{padding:12px;margin:10px}
+    /* push the click area to occupy most of the viewport height on phones */
+    #game-area{height:calc(100vh - 220px); max-height:calc(100vh - 140px); border-radius:12px}
+    .stat{min-width:72px;padding:8px;font-size:14px}
+    .big-click{width:160px;height:160px;font-size:20px}
+    .medals-wrap{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+    .btn-primary,.btn-ghost{padding:12px 14px;font-size:15px}
+    input,select{padding:12px;font-size:16px}
+    .cps-badge{left:10px;top:10px;padding:10px 12px}
+    #admin-messages{right:8px;top:8px;max-width:46%}
+    .card{padding:12px}
+    .muted{font-size:13px}
+  }
+
+  @media (max-height:600px){
+    /* shorter devices: still keep click area usable */
+    #game-area{height:62vh}
+    .container{padding:10px}
+  }
 </style>
 </head>
 <body>
@@ -161,7 +210,7 @@
             <input id="keep-signed" type="checkbox">
             <label for="keep-signed" class="muted" style="cursor:pointer">Keep me signed in (auto-login)</label>
           </div>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button id="login-btn" class="btn-primary">Login</button>
             <button id="help-btn" class="btn-ghost">How to play</button>
           </div>
@@ -181,7 +230,7 @@
         <div class="stats">
           <div class="stat">💰 <span id="money">0</span>$</div>
           <div class="stat">🎯 Goal: <span id="goal">7000</span>$</div>
-          <div class="stat">🏅 Medals: <span id="medal-count">0</span></div>
+          <div class="stat" id="medal-stat">🏅 Medals: <span id="medal-count">0</span></div>
         </div>
 
         <div style="display:flex;gap:8px;align-items:center">
@@ -192,7 +241,7 @@
         </div>
       </div>
 
-      <div id="game-area" class="card">
+      <div id="game-area" class="card" aria-label="Click area" role="button">
         <div id="click-hint">Click anywhere inside this area to earn money. Use challenges to win big.</div>
         <div id="effects" style="position:absolute;inset:0;pointer-events:none"></div>
 
@@ -203,7 +252,7 @@
         </div>
 
         <!-- admin messages appear here (top-right) -->
-        <div id="admin-messages"></div>
+        <div id="admin-messages" aria-hidden="true"></div>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap">
@@ -275,7 +324,7 @@
       <h3 id="duel-title">Duel</h3>
       <div class="challenge-area">
         <div id="duel-target" class="muted"></div>
-        <div id="duel-click" class="big-click">CLICK</div>
+        <div id="duel-click" class="big-click" role="button" aria-label="Duel click target">CLICK</div>
         <div class="challenge-stats">
           <div class="muted">You: <span id="duel-your-count">0</span></div>
           <div class="muted">Opp: <span id="duel-op-count">0</span></div>
@@ -375,6 +424,8 @@ const duelYourCount = document.getElementById('duel-your-count');
 const duelOpCount = document.getElementById('duel-op-count');
 const duelResult = document.getElementById('duel-result');
 const duelLeave = document.getElementById('duel-leave');
+
+const medalStatContainer = document.getElementById('medal-stat');
 
 /* ========== HELPERS ========== */
 function uid(){ return (Date.now().toString(36) + Math.random().toString(36).slice(2,9)); }
@@ -485,15 +536,22 @@ resetBtn.addEventListener('click', ()=>{
 });
 
 /* ========== GAME: clicks, medals ========== */
-gameArea.addEventListener('pointerdown', (ev)=>{
+// ensure pointer events and improved touch handling
+function onGamePointerDown(ev){
   if(!currentUser) return;
   if(currentRoomId) return; // while in duel, disable main clicks
   const rect = gameArea.getBoundingClientRect();
-  const x = ev.clientX - rect.left;
-  const y = ev.clientY - rect.top;
+  const clientX = (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : (ev.clientX || ev.pageX);
+  const clientY = (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : (ev.clientY || ev.pageY);
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
   makeRipple(x,y);
   addMoney(clickValue);
-});
+}
+
+// support both pointer and touchstart for broader compatibility
+gameArea.addEventListener('pointerdown', onGamePointerDown);
+gameArea.addEventListener('touchstart', function(e){ e.preventDefault(); onGamePointerDown(e); }, {passive:false});
 
 function addMoney(amount){
   money = (money||0) + amount;
@@ -517,26 +575,41 @@ function updateCPS(){
 }
 
 function checkCPSRecords(cps){
-  // personal best
+  // Only award medals when CPS exactly matches one of the defined thresholds
+  const thresholds = [5,10,15,20,25,30,35,40,45,50,55,60];
+  if (thresholds.includes(cps)){
+    const type = 'cps_' + cps;
+    if(!hasMedalType(type)){
+      awardMedal(type, `${cps} CPS!`, `You reached exactly ${cps} clicks/sec.`);
+    }
+  }
+
+  // Personal best handling (still keep awarding when you beat your personal best)
   if(cps > (bestCPS || 0)){
     const prev = bestCPS || 0;
     bestCPS = cps;
-    // award personal best medal (unique)
-    if(!hasMedalType('best_cps')){
-      awardMedal('best_cps', `New CPS Record: ${cps}`, `You set a new personal best of ${cps} clicks/sec (previous ${prev}).`);
-    } else {
-      // still add a medal with a unique id so user can collect many personal bests if desired
-      awardMedal('best_cps_' + nowTs(), `New CPS Record: ${cps}`, `You set a new personal best of ${cps} clicks/sec.`);
-    }
-  }
-  // special milestone: 60 CPS (one-time)
-  if(cps >= 60 && !hasMedalType('60_cps')){
-    awardMedal('60_cps', '60 CPS!', 'Insane speed — you reached 60 clicks per second!');
+    // award a personal-best medal (unique id so you can keep improving)
+    awardMedal('best_cps_' + nowTs(), `New CPS Record: ${cps}`, `You set a new personal best of ${cps} clicks/sec (previous ${prev}).`);
   }
 }
 
 function hasMedalType(type){
   return medals.some(m => m.type === type);
+}
+
+/* Flash medal area instead of showing a pop-up */
+function flashMedalArea(){
+  const targets = [];
+  if(medalsPanel) targets.push(medalsPanel);
+  if(medalStatContainer) targets.push(medalStatContainer);
+  targets.forEach(t=>{
+    // ensure it's visible enough to see flash — do not force open panel, we only flash what is visible
+    t.classList.add('medal-flash');
+    const onEnd = function(){ t.classList.remove('medal-flash'); t.removeEventListener('animationend', onEnd); };
+    t.addEventListener('animationend', onEnd);
+    // fallback removal after 1400ms in case animationend doesn't fire on some old browsers
+    setTimeout(()=> t.classList.remove('medal-flash'), 1400);
+  });
 }
 
 function awardMedal(type, label, reason){
@@ -545,18 +618,10 @@ function awardMedal(type, label, reason){
   const time = new Date().toISOString();
   const medal = { id, type, label, reason, time };
   medals.push(medal);
-  // visual notification
-  showMedalNotification(medal);
+  // NO admin popups for medals. Flash the medal area instead.
+  flashMedalArea();
   refreshUI();
   throttleSave();
-}
-
-function showMedalNotification(medal){
-  const el = document.createElement('div');
-  el.className = 'admin-msg admin-medal new-medal';
-  el.innerHTML = `<div class="admin-from">Medal Earned</div><div style="font-size:16px;font-weight:900">${medal.label}</div><div style="margin-top:6px;font-size:13px;opacity:0.95">${medal.reason}</div>`;
-  adminMessagesContainer.prepend(el);
-  setTimeout(()=> el.remove(), 4500);
 }
 
 /* goal check & medals awarding */
@@ -575,6 +640,8 @@ function checkGoal(){
     clickValue = (resets === 0) ? 1 : resets * 5;
     // update info panel
     spinFeedback.textContent = `Goal reached! ${label} — click value: ${clickValue}`;
+    // flash medal area when goal medal earned
+    flashMedalArea();
     refreshUI();
     throttleSave();
   }
@@ -1041,6 +1108,10 @@ function refreshUI(){
     // ignore localStorage errors
   }
 })();
+
+// accessibility: allow keyboard activation of the game area for desktop users
+gameArea.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') onGamePointerDown({ clientX: gameArea.clientWidth/2, clientY: gameArea.clientHeight/2, touches: null }); });
+
 </script>
 </body>
 </html>
