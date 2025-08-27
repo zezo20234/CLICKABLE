@@ -6,11 +6,11 @@
 <title>Zezo Clicker — Full Release (CPS & Shiny Medals) — Mobile Friendly</title>
 
 <!-- Fallback favicon / progressive web manifest -->
-<link rel="icon" type="image/png" sizes="512x512" href="/ps5.jpeg">
+<link rel="icon" type="image/png" sizes="512x512" href="/roblox.png">
 <link rel="manifest" href="/manifest.json">
 
 <!-- iOS home-screen icon & web-app meta (for iPhones) -->
-<link rel="apple-touch-icon" sizes="180x180" href="/ps5.jpeg">
+<link rel="apple-touch-icon" sizes="180x180" href="/roblox.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Zezo Clicker">
@@ -225,6 +225,7 @@
         <div>
           <h2 id="welcome">Welcome —</h2>
           <div id="logged-as" class="muted"></div>
+          <div id="playtime" class="muted" style="margin-top:6px">Playtime: 0h 0m 0s</div>
         </div>
 
         <div class="stats">
@@ -373,6 +374,10 @@ let clickTimestamps = [];
 let bestCPS = 0;
 let lastCPS = 0;
 
+// Playtime tracking (seconds)
+let playSeconds = 0;
+let playInterval = null;
+
 /* ========== DOM ========== */
 const loginCard = document.getElementById('login-card');
 const loginBtn = document.getElementById('login-btn');
@@ -385,6 +390,7 @@ const loginMsg = document.getElementById('login-msg');
 const gameUi = document.getElementById('game-ui');
 const welcomeEl = document.getElementById('welcome');
 const loggedAs = document.getElementById('logged-as');
+const playtimeEl = document.getElementById('playtime');
 const moneyEl = document.getElementById('money');
 const goalEl = document.getElementById('goal');
 const medalCountEl = document.getElementById('medal-count');
@@ -479,6 +485,57 @@ function animateMoney(to){
   moneyAnim = requestAnimationFrame(step);
 }
 
+/* format playtime */
+function formatPlaytime(s){
+  const hrs = Math.floor(s/3600);
+  const mins = Math.floor((s%3600)/60);
+  const secs = s%60;
+  return `${hrs}h ${mins}m ${secs}s`;
+}
+
+/* Award playtime medals up to current playSeconds (used on load to retroactively grant missed medals) */
+function awardPlaytimeMedalsUpTo(seconds){
+  const count = Math.floor(seconds / 900); // how many 15-min intervals
+  for(let i=1;i<=count;i++){
+    const minutes = i * 15;
+    const type = 'play_' + minutes;
+    if(!hasMedalType(type)){
+      awardMedal(type, `${minutes} min Played`, `Played for ${minutes} minutes.`);
+    }
+  }
+}
+
+/* Start play timer */
+function startPlayTimer(){
+  if(playInterval) return;
+  playInterval = setInterval(()=>{
+    if(!currentUser) return; // only count when logged in
+    const prev = playSeconds;
+    playSeconds += 1;
+    // update UI every second (cheap)
+    playtimeEl.textContent = 'Playtime: ' + formatPlaytime(playSeconds);
+
+    // Check for new 15-minute milestones crossed
+    const prevCount = Math.floor(prev / 900);
+    const newCount = Math.floor(playSeconds / 900);
+    if(newCount > prevCount){
+      for(let k = prevCount + 1; k <= newCount; k++){
+        const minutes = k * 15;
+        const type = 'play_' + minutes;
+        if(!hasMedalType(type)){
+          awardMedal(type, `${minutes} min Played`, `Played for ${minutes} minutes.`);
+          showTempMessage(`Milestone: ${minutes} minutes played`);
+        }
+      }
+    }
+
+    // periodic save every minute to be gentle
+    if(playSeconds % 60 === 0) throttleSave();
+  }, 1000);
+}
+
+function stopPlayTimer(){ if(playInterval) { clearInterval(playInterval); playInterval = null; } }
+
 /* ========== LOGIN / PRESENCE ========== */
 loginBtn.addEventListener('click', ()=>{
   const u = usernameInp.value.trim().toLowerCase();
@@ -515,6 +572,8 @@ function startSession(){
   listenAnnouncements();
   loadProgress();
   populateOpponents();
+  // start timer (loadProgress will set playSeconds before this runs in practice)
+  startPlayTimer();
 }
 
 /* logout - clears persisted sign-in and presence */
@@ -523,6 +582,9 @@ logoutBtn.addEventListener('click', ()=>{
     try { localStorage.removeItem('zezo_clicker_user'); } catch(e){}
     db.ref('presence/'+currentUser).set(false).catch(()=>{});
   }
+  // stop timer and save immediately
+  stopPlayTimer();
+  if(currentUser) saveProgress();
   location.reload();
 });
 
@@ -530,8 +592,8 @@ logoutBtn.addEventListener('click', ()=>{
 resetBtn.addEventListener('click', ()=>{
   if(!currentUser) return;
   if(!confirm('Reset your progress? This will remove money, medals, and goals.')) return;
-  db.ref('users/'+currentUser).set({money:0, goal:7000, medals:[], resets:0, bestCPS:0}).then(()=>{
-    money=0; goal=7000; medals=[]; resets=0; clickValue=1; bestCPS=0; clickTimestamps=[]; refreshUI();
+  db.ref('users/'+currentUser).set({money:0, goal:7000, medals:[], resets:0, bestCPS:0, playSeconds:0}).then(()=>{
+    money=0; goal=7000; medals=[]; resets=0; clickValue=1; bestCPS=0; clickTimestamps=[]; playSeconds=0; refreshUI();
   }).catch(()=>alert('Reset failed'));
 });
 
@@ -575,21 +637,25 @@ function updateCPS(){
 }
 
 function checkCPSRecords(cps){
-  // Only award medals when CPS exactly matches one of the defined thresholds
-  const thresholds = [5,10,15,20,25,30,35,40,45,50,55,60];
-  if (thresholds.includes(cps)){
+  // *** Updated behavior: award medals ONLY for multiples of 10 CPS (10, 20, 30...)
+  // This avoids awarding medals for 1,2,3... personal bests. We still track the personal best number
+  // but medals are only created when the CPS value is a multiple of 10.
+
+  if (cps >= 10 && cps % 10 === 0) {
     const type = 'cps_' + cps;
     if(!hasMedalType(type)){
       awardMedal(type, `${cps} CPS!`, `You reached exactly ${cps} clicks/sec.`);
     }
   }
 
-  // Personal best handling (still keep awarding when you beat your personal best)
+  // update personal best value (no medal unless it's a multiple of 10)
   if(cps > (bestCPS || 0)){
     const prev = bestCPS || 0;
     bestCPS = cps;
-    // award a personal-best medal (unique id so you can keep improving)
-    awardMedal('best_cps_' + nowTs(), `New CPS Record: ${cps}`, `You set a new personal best of ${cps} clicks/sec (previous ${prev}).`);
+    // give an extra 'personal best' medal only if the new personal best is a multiple of 10
+    if (cps >= 10 && cps % 10 === 0) {
+      awardMedal('best_cps_' + nowTs(), `New CPS Record: ${cps}`, `You set a new personal best of ${cps} clicks/sec (previous ${prev}).`);
+    }
   }
 }
 
@@ -751,7 +817,7 @@ function renderMedals(){
 /* ========== SAVE / LOAD ========== */
 function saveProgress(){
   if(!currentUser) return;
-  const payload = { money: money||0, goal: goal||7000, medals: medals||[], resets: resets||0, bestCPS: bestCPS||0 };
+  const payload = { money: money||0, goal: goal||7000, medals: medals||[], resets: resets||0, bestCPS: bestCPS||0, playSeconds: playSeconds||0 };
   db.ref('users/' + currentUser).set(payload).catch(err=> console.warn('Save err', err));
 }
 
@@ -765,21 +831,26 @@ function loadProgress(){
       medals = Array.isArray(d.medals)? d.medals : (d.medals||[]);
       resets = Number(d.resets || (d && d.medals ? d.medals.length:0) ) || 0;
       bestCPS = Number(d.bestCPS || 0);
+      playSeconds = Number(d.playSeconds || 0);
     } else {
-      money = 0; goal = 7000; medals = []; resets = 0; bestCPS = 0;
+      money = 0; goal = 7000; medals = []; resets = 0; bestCPS = 0; playSeconds = 0;
     }
     clickValue = (resets === 0) ? 1 : resets * 5;
+    // update playtime UI
+    playtimeEl.textContent = 'Playtime: ' + formatPlaytime(playSeconds);
+    // Award any missed playtime medals up to the current stored playSeconds
+    awardPlaytimeMedalsUpTo(playSeconds);
     refreshUI();
   }).catch(e=>{
     console.warn('Load fail', e);
-    money=0; goal=7000; medals=[]; resets=0; clickValue=1; bestCPS=0;
+    money=0; goal=7000; medals=[]; resets=0; clickValue=1; bestCPS=0; playSeconds=0;
     refreshUI();
   });
 }
 
 /* save on unload */
 window.addEventListener('beforeunload', ()=> {
-  if(currentUser) db.ref('users/'+currentUser).set({money:money||0,goal:goal||7000,medals:medals,resets:resets,bestCPS:bestCPS});
+  if(currentUser) db.ref('users/'+currentUser).set({money:money||0,goal:goal||7000,medals:medals,resets:resets,bestCPS:bestCPS, playSeconds: playSeconds||0});
 });
 
 /* ========== CHALLENGE SYSTEM ========== */
@@ -1087,6 +1158,7 @@ function refreshUI(){
   renderMedals();
   cpsEl.textContent = lastCPS || 0;
   clickValueEl.textContent = clickValue || 1;
+  playtimeEl.textContent = 'Playtime: ' + formatPlaytime(playSeconds);
 }
 
 /* ========== INITIALIZE ========== */
