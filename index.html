@@ -1185,5 +1185,22 @@ function refreshUI(){
 gameArea.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') onGamePointerDown({ clientX: gameArea.clientWidth/2, clientY: gameArea.clientHeight/2, touches: null }); });
 
 </script>
+<button id="hello-btn" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px 40px; font-size: 24px; cursor: pointer;">hello</button>
+
+<audio id="looping-audio" src="brainrot.mp3" loop></audio>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const helloButton = document.getElementById('hello-btn');
+        const loopingAudio = document.getElementById('looping-audio');
+
+        if (helloButton && loopingAudio) {
+            helloButton.addEventListener('click', () => {
+                loopingAudio.play();
+                helloButton.style.display = 'none';
+            });
+        }
+    });
+</script>
 </body>
 </html>
